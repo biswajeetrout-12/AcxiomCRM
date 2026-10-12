@@ -91,5 +91,3 @@ Tests use EF Core In-Memory - no live database required.
 - API returns 401/403 (not redirect) for unauthenticated API calls
 
 ---
-
-AcxiomCRM - Built with ASP.NET Core 8 MVC | Academic Project Submission
