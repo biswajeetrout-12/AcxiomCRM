@@ -1,0 +1,114 @@
+@model AcxiomCRM.ViewModels.Activities.ActivityListViewModel
+@{
+    ViewData["Title"] = "Activities";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">CRM Interaction Logs & Activities</h4>
+        <p class="text-muted small mb-0">Record and review customer meetings, phone calls, emails, and tasks.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+        <i class="bi bi-plus-circle-fill"></i> Log New Activity
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <select name="typeFilter" class="form-select">
+                    <option value="">All Activity Types</option>
+                    <option value="Call" selected="@(Model.TypeFilter == "Call")">Call</option>
+                    <option value="Meeting" selected="@(Model.TypeFilter == "Meeting")">Meeting</option>
+                    <option value="Email" selected="@(Model.TypeFilter == "Email")">Email</option>
+                    <option value="Task" selected="@(Model.TypeFilter == "Task")">Task</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <select name="statusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Completed" selected="@(Model.StatusFilter == "Completed")">Completed</option>
+                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary flex-grow-1">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Activities Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Subject & Details</th>
+                    <th>Related To</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Logged By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Activities.Any())
+                {
+                    @foreach (var a in Model.Activities)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
+                                    @a.ActivityType
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@a.Subject</div>
+                                @if (!string.IsNullOrEmpty(a.Description))
+                                {
+                                    <div class="text-muted small">@a.Description</div>
+                                }
+                            </td>
+                            <td>
+                                @if (a.Customer != null)
+                                {
+                                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@a.CustomerId" class="badge bg-light text-dark border text-decoration-none">
+                                        <i class="bi bi-building me-1"></i> @a.Customer.CustomerName
+                                    </a>
+                                }
+                                else if (a.Lead != null)
+                                {
+                                    <a asp-controller="Leads" asp-action="Details" asp-route-id="@a.LeadId" class="badge bg-light text-dark border text-decoration-none">
+                                        <i class="bi bi-funnel me-1"></i> @a.Lead.LeadName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td><i class="bi bi-clock me-1 text-muted"></i>@a.ActivityDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                            <td>
+                                <span class="badge @(a.Status == "Completed" ? "bg-success" : "bg-warning text-dark")">@a.Status</span>
+                            </td>
+                            <td>@(a.AssignedUser?.FullName ?? "User")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                            No interaction activities recorded matching your filter.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

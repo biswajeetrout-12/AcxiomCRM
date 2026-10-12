@@ -1,0 +1,133 @@
+@using AcxiomCRM.Authorization
+@using Microsoft.AspNetCore.Identity
+@using AcxiomCRM.Models.Entities
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var appUser = await UserManager.GetUserAsync(User);
+    var displayName = appUser?.FullName ?? User.Identity?.Name ?? "User";
+    var initials = displayName.Length > 0 ? displayName.Substring(0, 1).ToUpper() : "U";
+    var roleLabel = User.IsInRole(Roles.Admin) ? "Admin" 
+                  : User.IsInRole(Roles.Manager) ? "Manager" 
+                  : "Sales Executive";
+}
+
+<aside class="crm-sidebar" id="crmSidebar">
+    <!-- Brand -->
+    <div class="crm-brand">
+        <div class="crm-brand-logo">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div>
+            <div class="crm-brand-text">AcxiomCRM</div>
+            <div class="crm-brand-sub">Sales Intelligence Platform</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <ul class="crm-sidebar-nav">
+        <li class="crm-nav-section">Core Modules</li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Dashboard" ? "active" : "")"
+               asp-controller="Dashboard" asp-action="Index">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Customers" ? "active" : "")"
+               asp-controller="Customers" asp-action="Index">
+                <i class="bi bi-people-fill"></i>
+                <span>Customers</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Leads" ? "active" : "")"
+               asp-controller="Leads" asp-action="Index">
+                <i class="bi bi-funnel-fill"></i>
+                <span>Leads</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Opportunities" ? "active" : "")"
+               asp-controller="Opportunities" asp-action="Index">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Opportunities</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-section">Activities & Follow-Ups</li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "FollowUps" ? "active" : "")"
+               asp-controller="FollowUps" asp-action="Index">
+                <i class="bi bi-calendar-check-fill"></i>
+                <span>Follow-Ups</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Activities" ? "active" : "")"
+               asp-controller="Activities" asp-action="Index">
+                <i class="bi bi-clock-history"></i>
+                <span>Activities</span>
+            </a>
+        </li>
+
+        <li class="crm-nav-section">Intelligence & Reports</li>
+
+        <li class="crm-nav-item">
+            <a class="crm-nav-link @(currentController == "Reports" ? "active" : "")"
+               asp-controller="Reports" asp-action="Index">
+                <i class="bi bi-bar-chart-line-fill"></i>
+                <span>Reports & Analytics</span>
+            </a>
+        </li>
+
+        @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager))
+        {
+            <li class="crm-nav-section">Administration</li>
+        }
+
+        @if (User.IsInRole(Roles.Admin))
+        {
+            <li class="crm-nav-item">
+                <a class="crm-nav-link @(currentController == "Users" ? "active" : "")"
+                   asp-controller="Users" asp-action="Index">
+                    <i class="bi bi-person-gear"></i>
+                    <span>User & Role Management</span>
+                </a>
+            </li>
+
+            <li class="crm-nav-item">
+                <a class="crm-nav-link @(currentController == "AuditLogs" ? "active" : "")"
+                   asp-controller="AuditLogs" asp-action="Index">
+                    <i class="bi bi-journal-text"></i>
+                    <span>Audit Log</span>
+                </a>
+            </li>
+        }
+    </ul>
+
+    <!-- Footer -->
+    <div class="crm-sidebar-footer">
+        <div class="crm-user-card">
+            <div class="crm-user-avatar">@initials</div>
+            <div class="overflow-hidden flex-grow-1">
+                <div class="crm-user-name">@displayName</div>
+                <div class="crm-user-role">@roleLabel</div>
+            </div>
+        </div>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
+                    style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; font-weight: 600; padding: 0.45rem;">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
+        </form>
+    </div>
+</aside>

@@ -1,0 +1,133 @@
+@model AcxiomCRM.ViewModels.Leads.LeadListViewModel
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Lead Pipeline & Qualification</h4>
+        <p class="text-muted small mb-0">Capture, track, qualify, and convert sales prospects.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+        <i class="bi bi-funnel-fill"></i> Capture New Lead
+    </a>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-action="Index" class="row g-2">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control border-start-0" placeholder="Search by lead name, email, company..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="statusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="New" selected="@(Model.StatusFilter == "New")">New</option>
+                    <option value="Contacted" selected="@(Model.StatusFilter == "Contacted")">Contacted</option>
+                    <option value="Qualified" selected="@(Model.StatusFilter == "Qualified")">Qualified</option>
+                    <option value="Converted" selected="@(Model.StatusFilter == "Converted")">Converted</option>
+                    <option value="Lost" selected="@(Model.StatusFilter == "Lost")">Lost</option>
+                </select>
+            </div>
+            @if (!User.IsInRole("SalesExecutive"))
+            {
+                <div class="col-md-2">
+                    <select name="assignedToFilter" class="form-select" asp-items="ViewBag.UsersList">
+                        <option value="">All Owners</option>
+                    </select>
+                </div>
+            }
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary flex-grow-1">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Leads Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Lead Name</th>
+                    <th>Company</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Exp. Value</th>
+                    <th>Assigned To</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Leads.Any())
+                {
+                    @foreach (var l in Model.Leads)
+                    {
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">@l.LeadCode</span></td>
+                            <td class="fw-semibold">
+                                <a asp-action="Details" asp-route-id="@l.LeadId" class="text-decoration-none">
+                                    @l.LeadName
+                                </a>
+                            </td>
+                            <td>@(l.CompanyName ?? "—")</td>
+                            <td><span class="badge bg-light text-dark border">@l.Source</span></td>
+                            <td>
+                                <span class="badge status-@l.Status.ToLower()">@l.Status</span>
+                            </td>
+                            <td>
+                                <span class="badge @(l.Priority == "Urgent" ? "bg-danger" : l.Priority == "High" ? "bg-warning text-dark" : "bg-secondary")">
+                                    @l.Priority
+                                </span>
+                            </td>
+                            <td class="fw-bold text-dark">$@l.ExpectedValue.ToString("N0")</td>
+                            <td>@(l.AssignedUser?.FullName ?? "Unassigned")</td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@l.LeadId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (l.Status != "Converted")
+                                    {
+                                        <a asp-action="Convert" asp-route-id="@l.LeadId" class="btn btn-outline-success" title="Convert to Customer">
+                                            <i class="bi bi-arrow-repeat"></i> Convert
+                                        </a>
+                                    }
+                                    <a asp-action="Edit" asp-route-id="@l.LeadId" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if (!User.IsInRole("SalesExecutive") && l.Status != "Lost" && l.Status != "Converted")
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@l.LeadId" method="post" class="d-inline" onsubmit="return confirm('Mark this lead as Lost?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="Mark Lost">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-funnel fs-1 d-block mb-2 text-secondary"></i>
+                            No lead records found matching your filters.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

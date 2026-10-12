@@ -1,0 +1,79 @@
+@model AcxiomCRM.ViewModels.Leads.LeadConvertViewModel
+@{
+    ViewData["Title"] = "Convert Lead";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-arrow-repeat text-success me-2"></i>Convert Lead to Customer</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info py-2 small mb-4">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    Converting this lead will create an official <strong>Customer</strong> account and mark the lead as <strong>Converted</strong>. An audit log event will be permanently recorded.
+                </div>
+
+                <form asp-action="Convert" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="LeadId" />
+                    <input type="hidden" asp-for="LeadName" />
+                    <input type="hidden" asp-for="CompanyName" />
+                    <input type="hidden" asp-for="Email" />
+                    <input type="hidden" asp-for="Phone" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <div class="card bg-light border-0 p-3 mb-4">
+                        <h6 class="fw-bold mb-2">New Customer Information (from Lead)</h6>
+                        <div class="row g-2 small">
+                            <div class="col-sm-6"><span class="text-muted">Account Name:</span> <span class="fw-semibold">@(!string.IsNullOrWhiteSpace(Model.CompanyName) ? Model.CompanyName : Model.LeadName)</span></div>
+                            <div class="col-sm-6"><span class="text-muted">Contact:</span> <span class="fw-semibold">@Model.LeadName</span></div>
+                            <div class="col-sm-6"><span class="text-muted">Email:</span> @Model.Email</div>
+                            <div class="col-sm-6"><span class="text-muted">Phone:</span> @Model.Phone</div>
+                        </div>
+                    </div>
+
+                    <div class="card border p-3 mb-4">
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="CreateOpportunity" class="form-check-input" id="checkCreateOpp" />
+                            <label class="form-check-label fw-semibold" for="checkCreateOpp">Also create initial Sales Opportunity</label>
+                        </div>
+
+                        <div id="oppFields">
+                            <div class="mb-3">
+                                <label asp-for="OpportunityName" class="form-label fw-semibold"></label>
+                                <input asp-for="OpportunityName" class="form-control" />
+                                <span asp-validation-for="OpportunityName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-2">
+                                <label asp-for="OpportunityAmount" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="OpportunityAmount" class="form-control" type="number" step="0.01" />
+                                </div>
+                                <span asp-validation-for="OpportunityAmount" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Details" asp-route-id="@Model.LeadId" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-circle me-1"></i>Confirm Conversion</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('checkCreateOpp').addEventListener('change', function() {
+            document.getElementById('oppFields').style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
+}

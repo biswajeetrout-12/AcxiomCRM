@@ -1,0 +1,108 @@
+@model AcxiomCRM.ViewModels.Opportunities.OpportunityDetailsViewModel
+@{
+    ViewData["Title"] = Model.Opportunity.OpportunityName;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h4 class="fw-bold mb-0">@Model.Opportunity.OpportunityName</h4>
+            <span class="stage-badge stage-@Model.Opportunity.Stage.ToLower()">@Model.Opportunity.Stage</span>
+            <span class="badge @(Model.Opportunity.Status == "Won" ? "bg-success" : Model.Opportunity.Status == "Open" ? "bg-primary" : "bg-danger")">@Model.Opportunity.Status</span>
+        </div>
+        <p class="text-muted small mb-0 mt-1">Associated Account: <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Opportunity.CustomerId">@(Model.Opportunity.Customer?.CustomerName ?? "Customer")</a></p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Opportunity.OpportunityId" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Edit Opportunity
+        </a>
+        <a asp-controller="FollowUps" asp-action="Create" asp-route-opportunityId="@Model.Opportunity.OpportunityId" class="btn btn-warning btn-sm text-dark">
+            <i class="bi bi-calendar-plus me-1"></i> Schedule Follow-Up
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-currency-dollar text-success me-2"></i>Financial & Deal Terms</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Opportunity Amount:</span>
+                        <span class="fw-bold text-dark fs-5">$@Model.Opportunity.Amount.ToString("N0")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Win Probability:</span>
+                        <span class="fw-semibold">@Model.Opportunity.Probability%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Weighted Pipeline Value:</span>
+                        <span class="fw-bold text-primary fs-6">$@Model.Opportunity.WeightedValue.ToString("N0")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Expected Close Date:</span>
+                        <span class="fw-semibold">@Model.Opportunity.ExpectedCloseDate.ToString("dd MMM yyyy")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Account Owner:</span>
+                        <span>@(Model.Opportunity.AssignedUser?.FullName ?? "Unassigned")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Created Date:</span>
+                        <span>@Model.Opportunity.CreatedDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                    </li>
+                </ul>
+
+                @if (!string.IsNullOrEmpty(Model.Opportunity.Notes))
+                {
+                    <div class="mt-3">
+                        <label class="fw-semibold small text-muted">Notes:</label>
+                        <div class="bg-light p-2 rounded small">@Model.Opportunity.Notes</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Follow-ups -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-check text-warning me-2"></i>Associated Follow-Ups</h6>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.FollowUps.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var f in Model.FollowUps)
+                        {
+                            <div class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-secondary">@f.FollowUpType</span>
+                                    <span class="badge @(f.Status == "Completed" ? "bg-success" : "bg-primary")">@f.Status</span>
+                                </div>
+                                <div class="fw-semibold">@f.Subject</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-clock me-1"></i> @f.FollowUpDate.ToString("dd MMM yyyy, hh:mm tt")
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x fs-2"></i>
+                        <p class="mt-2 mb-0">No follow-ups recorded yet for this opportunity.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

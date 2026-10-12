@@ -1,0 +1,165 @@
+@model AcxiomCRM.ViewModels.Opportunities.OpportunityListViewModel
+@{
+    ViewData["Title"] = "Opportunities";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Opportunity Pipeline</h4>
+        <p class="text-muted small mb-0">Track active deals, pipeline stages, probabilities, and weighted forecasts.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+        <i class="bi bi-briefcase-fill"></i> New Opportunity
+    </a>
+</div>
+
+<!-- Financial Summary Strip -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm bg-primary text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="small text-white-50 text-uppercase fw-semibold">Total Open Pipeline</span>
+                    <h3 class="fw-bold mb-0 mt-1">$@Model.TotalPipelineValue.ToString("N0")</h3>
+                </div>
+                <div class="fs-1 text-white-50"><i class="bi bi-graph-up-arrow"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm bg-dark text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="small text-white-50 text-uppercase fw-semibold">Weighted Pipeline (Probability Adjusted)</span>
+                    <h3 class="fw-bold mb-0 mt-1 text-info">$@Model.WeightedPipelineValue.ToString("N0")</h3>
+                </div>
+                <div class="fs-1 text-white-50"><i class="bi bi-calculator"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-action="Index" class="row g-2">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control border-start-0" placeholder="Search by opportunity or customer..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="stageFilter" class="form-select">
+                    <option value="">All Stages</option>
+                    <option value="Qualification" selected="@(Model.StageFilter == "Qualification")">Qualification</option>
+                    <option value="Proposal" selected="@(Model.StageFilter == "Proposal")">Proposal</option>
+                    <option value="Negotiation" selected="@(Model.StageFilter == "Negotiation")">Negotiation</option>
+                    <option value="Won" selected="@(Model.StageFilter == "Won")">Won</option>
+                    <option value="Lost" selected="@(Model.StageFilter == "Lost")">Lost</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="statusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Open" selected="@(Model.StatusFilter == "Open")">Open</option>
+                    <option value="Won" selected="@(Model.StatusFilter == "Won")">Won</option>
+                    <option value="Lost" selected="@(Model.StatusFilter == "Lost")">Lost</option>
+                    <option value="Abandoned" selected="@(Model.StatusFilter == "Abandoned")">Abandoned</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary flex-grow-1">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Opportunities Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Opportunity Name</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Stage</th>
+                    <th>Probability</th>
+                    <th>Weighted Value</th>
+                    <th>Expected Close</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Opportunities.Any())
+                {
+                    @foreach (var o in Model.Opportunities)
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                <a asp-action="Details" asp-route-id="@o.OpportunityId" class="text-decoration-none">
+                                    @o.OpportunityName
+                                </a>
+                            </td>
+                            <td>@(o.Customer?.CustomerName ?? "—")</td>
+                            <td class="fw-bold text-dark">$@o.Amount.ToString("N0")</td>
+                            <td>
+                                <span class="stage-badge stage-@o.Stage.ToLower()">@o.Stage</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 6px; width: 50px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: @o.Probability%"></div>
+                                    </div>
+                                    <span class="small text-muted">@o.Probability%</span>
+                                </div>
+                            </td>
+                            <td class="text-muted small fw-semibold">$@o.WeightedValue.ToString("N0")</td>
+                            <td>
+                                <span class="@(o.Status == "Open" && o.ExpectedCloseDate < DateTime.Today ? "text-danger fw-semibold" : "")">
+                                    @o.ExpectedCloseDate.ToString("dd MMM yyyy")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(o.Status == "Won" ? "bg-success" : o.Status == "Open" ? "bg-primary" : "bg-danger")">
+                                    @o.Status
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@o.OpportunityId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@o.OpportunityId" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if (!User.IsInRole("SalesExecutive") && o.Status != "Abandoned")
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@o.OpportunityId" method="post" class="d-inline" onsubmit="return confirm('Mark this opportunity as Abandoned?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="Abandon">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-briefcase fs-1 d-block mb-2 text-secondary"></i>
+                            No opportunities found matching your filters.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+@{
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg   = TempData["ErrorMessage"]   as string;
+}
+
+@if (!string.IsNullOrEmpty(successMsg) || !string.IsNullOrEmpty(errorMsg))
+{
+    <div class="crm-toast-container" id="crmToastContainer">
+        @if (!string.IsNullOrEmpty(successMsg))
+        {
+            <div class="crm-toast crm-toast-success mb-2" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <div>@successMsg</div>
+                <button type="button" class="btn-close btn-close-sm ms-auto" style="font-size:0.65rem;"
+                        onclick="this.closest('.crm-toast').remove()"></button>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <div class="crm-toast crm-toast-error mb-2" role="alert">
+                <i class="bi bi-exclamation-circle-fill fs-5"></i>
+                <div>@errorMsg</div>
+                <button type="button" class="btn-close btn-close-sm ms-auto" style="font-size:0.65rem;"
+                        onclick="this.closest('.crm-toast').remove()"></button>
+            </div>
+        }
+    </div>
+}
